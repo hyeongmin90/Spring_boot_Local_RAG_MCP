@@ -19,32 +19,47 @@ init(autoreset=True)
 
 # Define the Tool
 @tool
-def search_spring_boot_docs(query: str) -> str:
+def search_spring_boot_docs(query: str, category: str = None) -> str:
     """
     Searches the Spring Boot reference documentation for relevant information.
     Use this tool to find answers to questions about Spring Boot configuration, features, and usage.
     
     Args:
         query: The search query string.
+        category: The type of documentation to search. (defalut: None, Type = [spring-boot, spring-data-redis])
     """
     try:
-        results = query_documents(query, k=5)
+        results = query_documents(query, 5, category)
         
         if not results:
             return "No results found in the documentation."
-            
+        
+        with open("RagAgent_SearchLog.txt", "a", encoding="utf-8") as f:
+            f.write(f"query: {query}\n")
+            f.write(f"category: {category}\n")
+            for i, doc in enumerate(results, 1):
+                source = doc.metadata.get("source", "Unknown")
+                header = doc.metadata.get("header", "N/A")
+                f.write(f"Result {i}" + '-' * 50 + "\n")
+                f.write(f"Source: {source}\n")
+                f.write(f"Header: {header}\n")
+                f.write(f"Category: {doc.metadata.get('category', 'Unknown')}\n")
+                f.write(f"Content:\n{doc.page_content}\n")
+            f.write("="*50 + "\n")
+
         output = ""
         for i, doc in enumerate(results, 1):
             source = doc.metadata.get("source", "Unknown")
-            original = doc.metadata.get("original_content", "N/A")
-            summary = doc.page_content
-            
+            header = doc.metadata.get("header", "N/A")
+
             output += f"--- Result {i} ---\n"
             output += f"Source: {source}\n"
-            output += f"Summary: {summary}\n"
-            output += f"Content: {original[:1000]}...\n" 
+            output += f"Header: {header}\n"
+            output += f"Category: {doc.metadata.get('category', 'Unknown')}\n"
+            output += f"Content:\n{doc.page_content}\n" 
             output += "\n"
-            
+
+        print(f"\n{Fore.YELLOW}Search Results End:{Style.RESET_ALL}")
         return output
     except Exception as e:
         return f"Error during search: {e}"
@@ -63,6 +78,7 @@ def run_rag_agent():
         "You are a Spring Boot Expert RAG Agent.\n"
         "Answer user questions accurately using the provided documentation.\n"
         "ALWAYS use the 'search_spring_boot_docs' tool to verify information before answering.\n"
+        "Do not specify a document type for the initial search. Specify the document type for subsequent searches.\n"
         "If you cannot find the answer in the search results, admit it honestly.\n"
         "Provide clear, code-centric answers where applicable.\n"
         "Answer in Korean."
@@ -90,6 +106,11 @@ def run_rag_agent():
     while True:
         try:
             user_input = input(f"\n{Fore.GREEN}User: {Style.RESET_ALL}").strip()
+
+            with open("RagAgent_SearchLog.txt", "a", encoding="utf-8") as f:
+                f.write(f"User: {user_input}\n")
+                f.write("="*50 + "\n")
+
             if user_input.lower() in ["exit", "quit", "q"]:
                 print("Goodbye!")
                 break
@@ -99,6 +120,8 @@ def run_rag_agent():
             
             print(f"\n{Fore.YELLOW}Agent:{Style.RESET_ALL} ", end="", flush=True)
             
+            full_response = ""
+
             # Stream execution
             for event in agent.stream({"messages": [HumanMessage(content=user_input)]}, config, stream_mode="messages"):
                 msg, _ = event
@@ -108,12 +131,17 @@ def run_rag_agent():
                     # Skip tool calls if they are just chunks of arguments
                     if not msg.tool_call_chunks: 
                         print(msg.content, end="", flush=True)
+                        full_response += msg.content
 
                 # Optional: Indicate Tool Usage
                 # if msg.__class__.__name__ == 'ToolMessage':
                 #    print(f"\n[Tool Result] {msg.content[:50]}...", end="")
 
             print() # Newline after response
+
+            with open("RagAgent_SearchLog.txt", "a", encoding="utf-8") as f:
+                f.write(f"\nAgent: {full_response}\n")
+                f.write("="*50 + "\n")
 
         except KeyboardInterrupt:
             print("\nInterrupted.")
