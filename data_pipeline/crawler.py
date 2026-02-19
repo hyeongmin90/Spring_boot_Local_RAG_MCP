@@ -43,8 +43,8 @@ def extract_path_from_url(url):
     URL에서 경로 추출
     """
 
-    if '/spring-boot/' in url:
-        path = url.split('/spring-boot/')[-1]
+    if '/docs.spring.io/' in url:
+        path = url.split('/docs.spring.io/')[-1]
         # .html 제거
         path = path.replace('.html', '')
         # 슬래시를 언더스코어로
