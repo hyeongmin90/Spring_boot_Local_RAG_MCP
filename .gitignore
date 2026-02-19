@@ -1,5 +1,7 @@
 # 프로젝트 임시 파일
 temp_logs/
+chunk_logs/
+chroma_db/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
