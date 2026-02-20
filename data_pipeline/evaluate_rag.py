@@ -5,13 +5,14 @@ from tqdm import tqdm
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import List
+from datetime import datetime
 
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from data_pipeline.storage import get_vectorstore, query_documents
+from data_pipeline.storage import get_vectorstore, query_documents, mmr_query_documents
 
 # Load environment variables (OPENAI_API_KEY)
 load_dotenv()
@@ -82,15 +83,16 @@ def generate_questions(chunk_content):
 
     return questions.questions
 
-def evaluate_retrieval(question, expected_chunk_id, expected_source, k=10):
+def evaluate_retrieval(question, expected_chunk_id, expected_source, method="dense", k=10):
     """
     Queries the vector store with the generated question and checks if the expected chunk is retrieved.
     Calculates the rank of the expected chunk.
     """
-    # Fetch top k results
-    # Adjust category if necessary, or just search globally
-    results = query_documents(question, k=k)
-    
+    if method == "mmr":
+        results = mmr_query_documents(question, k=k)
+    else:
+        results = query_documents(question, k=k)
+
     for rank, doc in enumerate(results, start=1):
         retrieved_chunk_id = doc.metadata.get("chunk_id")
         retrieved_source = doc.metadata.get("source")
@@ -113,22 +115,6 @@ def run_evaluation(num_samples=10, max_k=10):
     if not chunks:
         return
         
-    results_log = []
-    
-    # Track metrics for top-5
-    hits_5 = 0
-    mrr_sum_5 = 0.0
-    
-    # Track metrics for top-10
-    hits_10 = 0
-    mrr_sum_10 = 0.0
-
-    # Track metrics for top-max_k
-    hits_max_k = 0
-    mrr_sum_max_k = 0.0
-    
-    total_questions = 0
-    
     print("\nGenerating questions concurrently...")
     
     # Process question generation concurrently
@@ -152,6 +138,16 @@ def run_evaluation(num_samples=10, max_k=10):
 
     print("\nEvaluating retrieval...")
     
+    methods = ["dense", "mmr"]
+    all_metrics = {m: {
+        "hits_5": 0, "mrr_sum_5": 0.0, 
+        "hits_10": 0, "mrr_sum_10": 0.0, 
+        "hits_max_k": 0, "mrr_sum_max_k": 0.0, 
+        "results_log": []
+    } for m in methods}
+    
+    total_questions = 0
+    
     for i, (item, questions) in enumerate(tqdm(chunk_questions_map, desc="Retrieval Testing")):
         metadata = item['metadata']
         
@@ -161,109 +157,99 @@ def run_evaluation(num_samples=10, max_k=10):
         for q_idx, question in enumerate(questions):
             total_questions += 1
             
-            # 2. Evaluate Retrieval (Fetch up to max_k, e.g., 10)
-            rank = evaluate_retrieval(question, expected_chunk_id, expected_source, k=max_k)
-            
-            # 3. Calculate Metrics
-            # --- Top 10 Metrics ---
-            is_hit_10 = 0 < rank <= 10
-            if is_hit_10:
-                hits_10 += 1
-                mrr_sum_10 += 1.0 / rank
+            for method in methods:
+                # 2. Evaluate Retrieval (Fetch up to max_k, e.g., 50)
+                rank = evaluate_retrieval(question, expected_chunk_id, expected_source, method=method, k=max_k)
                 
-            # --- Top 5 Metrics ---
-            is_hit_5 = 0 < rank <= 5
-            if is_hit_5:
-                hits_5 += 1
-                mrr_sum_5 += 1.0 / rank
+                # 3. Calculate Metrics
+                # --- Top 5 Metrics ---
+                is_hit_5 = 0 < rank <= 5
+                if is_hit_5:
+                    all_metrics[method]["hits_5"] += 1
+                    all_metrics[method]["mrr_sum_5"] += 1.0 / rank
 
-            is_hit_max_k = 0 < rank <= max_k
-            if is_hit_max_k:
-                hits_max_k += 1
-                mrr_sum_max_k += 1.0 / rank
-                
-            # Log result for this question
-            results_log.append({
-                "chunk_idx": i + 1,
-                "q_idx": q_idx + 1,
-                "question": question,
-                "expected_source": expected_source,
-                "rank": rank,
-                "is_hit_5": is_hit_5,
-                "is_hit_10": is_hit_10,
-                "is_hit_max_k": is_hit_max_k
-            })
+                # --- Top 10 Metrics ---
+                is_hit_10 = 0 < rank <= 10
+                if is_hit_10:
+                    all_metrics[method]["hits_10"] += 1
+                    all_metrics[method]["mrr_sum_10"] += 1.0 / rank
+
+                # --- Top max_k Metrics ---
+                is_hit_max_k = 0 < rank <= max_k
+                if is_hit_max_k:
+                    all_metrics[method]["hits_max_k"] += 1
+                    all_metrics[method]["mrr_sum_max_k"] += 1.0 / rank
+                    
+                # Log result for this question
+                all_metrics[method]["results_log"].append({
+                    "chunk_idx": i + 1,
+                    "q_idx": q_idx + 1,
+                    "question": question,
+                    "expected_source": expected_source,
+                    "rank": rank,
+                })
         
-    # Final Metrics calculation
-    total_questions = total_questions if total_questions > 0 else 0
-
-    hit_rate_5 = hits_5 / total_questions
-    mrr_5 = mrr_sum_5 / total_questions
+    for method in methods:
+        # Final Metrics calculation
+        tq = total_questions if total_questions > 0 else 1
     
-    hit_rate_10 = hits_10 / total_questions
-    mrr_10 = mrr_sum_10 / total_questions
-
-    hit_rate_max_k = hits_max_k / total_questions
-    mrr_max_k = mrr_sum_max_k / total_questions
+        hit_rate_5 = all_metrics[method]["hits_5"] / tq
+        mrr_5 = all_metrics[method]["mrr_sum_5"] / tq
+        
+        hit_rate_10 = all_metrics[method]["hits_10"] / tq
+        mrr_10 = all_metrics[method]["mrr_sum_10"] / tq
     
-    print("\n" + "="*50)
-    print("=== Evaluation Results ===")
-    print(f"Total Chunks Sampled: {len(chunks)}")
-    print(f"Total Questions Evaluated: {total_questions}")
-    print("-" * 25)
-    print("--- Top 5 Metrics ---")
-    print(f"Top-5 Hit Rate: {hit_rate_5:.2%} ({hits_5}/{total_questions})")
-    print(f"Top-5 MRR: {mrr_5:.4f}")
-    print("-" * 25)
-    print("--- Top 10 Metrics ---")
-    print(f"Top-10 Hit Rate: {hit_rate_10:.2%} ({hits_10}/{total_questions})")
-    print(f"Top-10 MRR: {mrr_10:.4f}")
-    print("-" * 25)
-    print(f"--- Top {max_k} Metrics ---")
-    print(f"Top-{max_k} Hit Rate: {hit_rate_max_k:.2%} ({hits_max_k}/{total_questions})")
-    print(f"Top-{max_k} MRR: {mrr_max_k:.4f}")
-    print("="*50 + "\n")
-
+        hit_rate_max_k = all_metrics[method]["hits_max_k"] / tq
+        mrr_max_k = all_metrics[method]["mrr_sum_max_k"] / tq
+        
+        print("\n" + "="*50)
+        print(f"=== Evaluation Results ({method.upper()}) ===")
+        print(f"Total Chunks Sampled: {len(chunks)}")
+        print(f"Total Questions Evaluated: {total_questions}")
+        print("-" * 25)
+        print("--- Top 5 Metrics ---")
+        print(f"Top-5 Hit Rate: {hit_rate_5:.2%} ({all_metrics[method]['hits_5']}/{total_questions})")
+        print(f"Top-5 MRR: {mrr_5:.4f}")
+        print("-" * 25)
+        print("--- Top 10 Metrics ---")
+        print(f"Top-10 Hit Rate: {hit_rate_10:.2%} ({all_metrics[method]['hits_10']}/{total_questions})")
+        print(f"Top-10 MRR: {mrr_10:.4f}")
+        print("-" * 25)
+        print(f"--- Top {max_k} Metrics ---")
+        print(f"Top-{max_k} Hit Rate: {hit_rate_max_k:.2%} ({all_metrics[method]['hits_max_k']}/{total_questions})")
+        print(f"Top-{max_k} MRR: {mrr_max_k:.4f}")
+        print("="*50)
     
-    # Detailed log
-    # print("--- Detailed Log ---")
-    # for i, log in enumerate(results_log, 1):
-    #     if log['rank'] > 0:
-    #         status = f"✅ HIT (Rank: {log['rank']})"
-    #     else:
-    #         status = f"❌ MISS (Not in top-{max_k})"
-            
-    #     print(f"Q{i}: {log['question']}")
-    #     print(f"   Source: {log['expected_source']}")
-    #     print(f"   Result: {status}\n")
-
-    with open("evaluation_log.txt", "w", encoding="utf-8") as f:
-        f.write("=== Evaluation Results ===\n")
-        f.write(f"Total Chunks Sampled: {len(chunks)}\n")
-        f.write(f"Total Questions Evaluated: {total_questions}\n")
-        f.write("-" * 25 + "\n")
-        f.write("--- Top 5 Metrics ---\n")
-        f.write(f"Top-5 Hit Rate: {hit_rate_5:.2%} ({hits_5}/{total_questions})\n")
-        f.write(f"Top-5 MRR: {mrr_5:.4f}\n")
-        f.write("-" * 25 + "\n")
-        f.write("--- Top 10 Metrics ---\n")
-        f.write(f"Top-10 Hit Rate: {hit_rate_10:.2%} ({hits_10}/{total_questions})\n")
-        f.write(f"Top-10 MRR: {mrr_10:.4f}\n")
-        f.write("-" * 25 + "\n")
-        f.write(f"--- Top {max_k} Metrics ---\n")
-        f.write(f"Top-{max_k} Hit Rate: {hit_rate_max_k:.2%} ({hits_max_k}/{total_questions})\n")
-        f.write(f"Top-{max_k} MRR: {mrr_max_k:.4f}\n")
-        f.write("="*50 + "\n\n")
-        f.write("--- Detailed Log ---\n")
-        for i, log in enumerate(results_log, 1):
-            if log['rank'] > 0:
-                status = f"✅ HIT (Rank: {log['rank']})"
-            else:
-                status = f"❌ MISS (Not in top-{max_k})"
-                
-            f.write(f"Q{i}: {log['question']}\n")
-            f.write(f"   Source: {log['expected_source']}\n")
-            f.write(f"   Result: {status}\n\n")
+        log_file = f"evaluation_log_{method}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    
+        with open(log_file, "w", encoding="utf-8") as f:
+            f.write(f"Retrieval Method: {method.upper()}\n\n")
+            f.write("=== Evaluation Results ===\n")
+            f.write(f"Total Chunks Sampled: {len(chunks)}\n")
+            f.write(f"Total Questions Evaluated: {total_questions}\n")
+            f.write("-" * 25 + "\n")
+            f.write("--- Top 5 Metrics ---\n")
+            f.write(f"Top-5 Hit Rate: {hit_rate_5:.2%} ({all_metrics[method]['hits_5']}/{total_questions})\n")
+            f.write(f"Top-5 MRR: {mrr_5:.4f}\n")
+            f.write("-" * 25 + "\n")
+            f.write("--- Top 10 Metrics ---\n")
+            f.write(f"Top-10 Hit Rate: {hit_rate_10:.2%} ({all_metrics[method]['hits_10']}/{total_questions})\n")
+            f.write(f"Top-10 MRR: {mrr_10:.4f}\n")
+            f.write("-" * 25 + "\n")
+            f.write(f"--- Top {max_k} Metrics ---\n")
+            f.write(f"Top-{max_k} Hit Rate: {hit_rate_max_k:.2%} ({all_metrics[method]['hits_max_k']}/{total_questions})\n")
+            f.write(f"Top-{max_k} MRR: {mrr_max_k:.4f}\n")
+            f.write("="*50 + "\n\n")
+            f.write("--- Detailed Log ---\n")
+            for i, log in enumerate(all_metrics[method]["results_log"], 1):
+                if log['rank'] > 0:
+                    status = f"✅ HIT (Rank: {log['rank']})"
+                else:
+                    status = f"❌ MISS (Not in top-{max_k})"
+                    
+                f.write(f"Q{i}: {log['question']}\n")
+                f.write(f"   Source: {log['expected_source']}\n")
+                f.write(f"   Result: {status}\n\n")
 
 if __name__ == "__main__":
     # You can adjust the number of samples and max_k value here
