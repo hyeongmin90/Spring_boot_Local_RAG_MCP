@@ -190,14 +190,14 @@ def fetch_docs(start_url="https://docs.spring.io/spring-boot/reference/", max_pa
     print(f"Completed: {success_count}/{len(links_list)} pages saved")
     # print(f"Output directory: {output_dir}/")
     
-    # 통계
-    import glob
-    saved = glob.glob(os.path.join(output_dir, "*.md"))
-    total_size = sum(os.path.getsize(f) for f in saved)
+    # # 통계
+    # import glob
+    # saved = glob.glob(os.path.join(output_dir, "*.md"))
+    # total_size = sum(os.path.getsize(f) for f in saved)
     
-    print(f"\nStatistics:")
-    print(f"  Total files: {len(saved)}")
-    print(f"  Total size: {total_size:,} bytes ({total_size/1024/1024:.2f} MB)")
+    # print(f"\nStatistics:")
+    # print(f"  Total files: {len(saved)}")
+    # print(f"  Total size: {total_size:,} bytes ({total_size/1024/1024:.2f} MB)")
 
 if __name__ == "__main__":
     for _ in fetch_docs(max_pages=100):

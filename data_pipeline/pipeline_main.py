@@ -41,6 +41,12 @@ async def process_page(sem, page, log_dir, category):
              path_parts = url_link.rstrip('/').split('/')
              log_filename = path_parts[-1] if path_parts else "index"
         
+
+        for i, chunk in enumerate(chunks):
+            chunk.metadata["source"] = url_link
+            # Add docs_type to metadata
+            chunk.metadata["category"] = category
+            chunk.metadata["chunk_id"] = hashlib.md5(f"{url_link}#{i}".encode()).hexdigest()
         # # Debug: 청킹 결과 로그 저장
         # log_filename = "".join([c for c in log_filename if c.isalpha() or c.isdigit() or c in (' ', '.', '_', '-')]).rstrip()
         # log_path = os.path.join(log_dir, f"{log_filename}_chunks.txt")
@@ -49,14 +55,7 @@ async def process_page(sem, page, log_dir, category):
         #     f.write(f"Source: {url_link}\n")
         #     f.write(f"Total Chunks: {len(chunks)}\n")
         #     f.write("="*50 + "\n\n")
-            
         #     for i, chunk in enumerate(chunks):
-        #         chunk.metadata["source"] = url_link
-        #         # Add docs_type to metadata
-        #         chunk.metadata["category"] = category
-        #         chunk.metadata["chunk_id"] = hashlib.md5(f"{url_link}#{i}".encode()).hexdigest()
-                
-        #         # Write to log
         #         f.write(f"=== Chunk {i+1} ===\n")
         #         f.write(f"Header: {chunk.metadata.get('header', 'N/A')}\n")
         #         f.write(f"Category: {category}\n")

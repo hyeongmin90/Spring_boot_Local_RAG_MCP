@@ -118,23 +118,24 @@ def evaluate_retrieval_redundancy(num_samples=10, k=5):
     avg_sem_red = total_semantic_redundancy / valid_queries
     avg_lex_red = total_lexical_redundancy / valid_queries
     
-    # 3. 결과 출력
-    print("\n" + "="*50)
-    print("=== 중복률 평가 결과 ===")
-    print("Retrieval Method: Dense Retrieval (Similarity Search)")
-    print(f"평가된 질문 수: {valid_queries}")
-    print(f"Top-K 설정: {k}")
-    print("-" * 25)
-    print(f"의미적 중복도(Semantic Redundancy): {avg_sem_red:.4f}")
-    print("  * 문서 간 쌍별 కో사인 유사도 평균입니다.")
-    print("  * 높은 값 (1.0에 가까움) -> 검색된 문서들의 의미가 매우 비슷함.")
-    print("  * 낮은 값 -> 검색된 문서가 다양한 문맥/내용을 담고 있음.")
-    print("-" * 25)
-    print(f"어휘적 중복도(Lexical Redundancy): {avg_lex_red:.4f}")
-    print("  * 문서 간 쌍별 자카드 유사도(Jaccard) 평균입니다.")
-    print("  * 높은 값 -> 정확히 일치하는 단어를 많이 공유하고 있음.")
-    print("="*50)
+    with open("redundancy_results.txt", "w", encoding="utf-8") as f:
+        f.write("=== 중복률 평가 결과 ===\n")
+        f.write("Retrieval Method: Dense Retrieval (Similarity Search)\n")
+        f.write(f"평가된 질문 수: {valid_queries}\n")
+        f.write(f"Top-K 설정: {k}\n")
+        f.write("-" * 25 + "\n")
+        f.write(f"의미적 중복도(Semantic Redundancy): {avg_sem_red:.4f}\n")
+        f.write("  * 문서 간 쌍별 코사인 유사도 평균입니다.\n")
+        f.write("  * 높은 값 (1.0에 가까움) -> 검색된 문서들의 의미가 매우 비슷함.\n")
+        f.write("  * 낮은 값 -> 검색된 문서가 다양한 문맥/내용을 담고 있음.\n")
+        f.write("-" * 25 + "\n")
+        f.write(f"어휘적 중복도(Lexical Redundancy): {avg_lex_red:.4f}\n")
+        f.write("  * 문서 간 쌍별 자카드 유사도(Jaccard) 평균입니다.\n")
+        f.write("  * 높은 값 -> 정확히 일치하는 단어를 많이 공유하고 있음.\n")
+        f.write("="*50 + "\n")
+    
+    print("saved result: redundancy_results.txt")
 
 if __name__ == "__main__":
     # 샘플 개수와 Top-K 설정을 여기서 변경하실 수 있습니다.
-    evaluate_retrieval_redundancy(num_samples=10, k=5)
+    evaluate_retrieval_redundancy(num_samples=100, k=10)

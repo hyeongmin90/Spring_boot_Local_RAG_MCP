@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from data_pipeline.storage import get_vectorstore, query_documents, mmr_query_documents
+from data_pipeline.storage import get_vectorstore, query_documents, mmr_query_documents, query_hybrid
 
 # Load environment variables (OPENAI_API_KEY)
 load_dotenv()
@@ -43,12 +43,14 @@ def get_random_chunks(n=10):
     for idx in sampled_indices:
         doc_content = db_data['documents'][idx]
         metadata = db_data['metadatas'][idx] if 'metadatas' in db_data and db_data['metadatas'] else {}
+        doc_id = db_data['ids'][idx] if 'ids' in db_data and db_data['ids'] else None
         
         # Only select chunks that have a reasonable length to generate a good question
         if len(doc_content) > 100:
             sampled_chunks.append({
                 "content": doc_content,
-                "metadata": metadata
+                "metadata": metadata,
+                "id": doc_id
             })
             
     print(f"Sampled {len(sampled_chunks)} viable chunks for evaluation.")
@@ -62,47 +64,52 @@ def generate_questions(chunk_content):
     Uses LLM to generate 3 challenging questions based on the provided text chunk.
     """
     llm = ChatOpenAI(model="gpt-5-mini", temperature=0.5)
+
+    prompt = """
+    You are an expert evaluator for a RAG system.
+    Given the following text, generate exactly 3 distinct questions that can be answered strictly and explicitly using only the provided text.
+
+    Follow these rules strictly:
+    1. Do not copy exact sentences from the text.
+    2. Include a small number of important keywords from the text.
+    3. The answer to each question must be clearly and explicitly stated in the text.
+    4. Do NOT require external knowledge, architectural reasoning, performance analysis, or unstated implications.
+    5. Vary the difficulty by increasing reasoning complexity within the text only.
+    6. Output only the questions.
+
+    Text:
+    {text}
+
+    Questions:
+    """
     
-    prompt = PromptTemplate.from_template(
-        "You are an expert evaluator for a RAG system.\n"
-        "Given the following text, generate exactly 3 distinct questions that can be answered by reading this text.\n"
-        "Follow these rules strictly:\n"
-        "1. Do not use the exact phrasing from the text.\n"
-        "2. Do not copy key keywords directly from the text.\n"
-        "3. At least one question must be highly abstract or conceptual.\n"
-        "4. The questions must sound like natural, realistic inquiries a developer might ask.\n"
-        "5. You may use terminology not present in the text, as long as the underlying meaning/answer remains the same.\n"
-        "6. Three questions should each have a different level of difficulty.\n"
-        "7. Output only the questions, nothing else.\n"
-        "Text:\n{text}\n\n"
-        "Questions"
-    )
+    prompt = PromptTemplate.from_template(prompt)
     
     chain = prompt | llm.with_structured_output(Questions)
     questions = chain.invoke({"text": chunk_content})
 
     return questions.questions
 
-def evaluate_retrieval(question, expected_chunk_id, expected_source, method="dense", k=10):
+def evaluate_retrieval(question, expected_id, expected_source, method="dense", k=10):
     """
     Queries the vector store with the generated question and checks if the expected chunk is retrieved.
     Calculates the rank of the expected chunk.
     """
     if method == "mmr":
         results = mmr_query_documents(question, k=k)
+    elif method == "hybrid":
+        results = query_hybrid(question, k=k)
     else:
         results = query_documents(question, k=k)
 
     for rank, doc in enumerate(results, start=1):
-        retrieved_chunk_id = doc.metadata.get("chunk_id")
+        retrieved_id = getattr(doc, 'id', None) or doc.metadata.get("chunk_id")
         retrieved_source = doc.metadata.get("source")
         
         # Check if it matches the expected chunk
-        # Matching by chunk_id is preferred if available, otherwise by source as a loose fallback
-        if expected_chunk_id and retrieved_chunk_id == expected_chunk_id:
+        # Match only by chunk ID for strict evaluation
+        if expected_id and retrieved_id == expected_id:
             return rank
-        elif not expected_chunk_id and expected_source and retrieved_source == expected_source:
-             return rank
             
     return -1 # Not found within top k
 
@@ -138,7 +145,7 @@ def run_evaluation(num_samples=10, max_k=10):
 
     print("\nEvaluating retrieval...")
     
-    methods = ["dense", "mmr"]
+    methods = ["dense", "hybrid"]
     all_metrics = {m: {
         "hits_5": 0, "mrr_sum_5": 0.0, 
         "hits_10": 0, "mrr_sum_10": 0.0, 
@@ -253,4 +260,4 @@ def run_evaluation(num_samples=10, max_k=10):
 
 if __name__ == "__main__":
     # You can adjust the number of samples and max_k value here
-    run_evaluation(num_samples=100, max_k=50)
+    run_evaluation(num_samples=50, max_k=50)
