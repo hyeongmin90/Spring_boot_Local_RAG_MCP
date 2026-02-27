@@ -8,7 +8,7 @@ from typing import List
 from datetime import datetime
 
 # Add project root to sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate

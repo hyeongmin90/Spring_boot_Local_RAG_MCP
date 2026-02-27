@@ -3,7 +3,7 @@ from langchain_core.documents import Document
 
 
 #basic split text
-def split_text(text, chunk_size=1000, chunk_overlap=200):
+def basic_split_text(text, chunk_size=1000, chunk_overlap=200):
     """
     Splits text into chunks using RecursiveCharacterTextSplitter with custom logic.
     If text length is less than 1.5 * chunk_size, returns a single chunk.

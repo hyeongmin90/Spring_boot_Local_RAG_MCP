@@ -3,12 +3,15 @@ import sys
 import json
 from tqdm import tqdm
 from datetime import datetime
+from dotenv import load_dotenv
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+load_dotenv()
+
 from langchain_openai import OpenAIEmbeddings
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from data_pipeline.storage import query_documents, mmr_query_documents, query_hybrid
-from data_pipeline.evaluate_redundancy import calculate_semantic_redundancy, calculate_lexical_redundancy
+from data_pipeline.evaluation.evaluate_redundancy import calculate_semantic_redundancy, calculate_lexical_redundancy
 
 def evaluate_retrieval(question, expected_id, method="dense", k=10):
     """
@@ -161,4 +164,4 @@ def run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=5
                 f.write(f"   Result: {status}\n\n")
 
 if __name__ == "__main__":
-    run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=50)
+    run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=20)

@@ -143,8 +143,8 @@ def fetch_docs(start_url="https://docs.spring.io/spring-boot/reference/", max_pa
     saved_files = {}
 
     # # 출력 디렉토리
-    # output_dir = "spring_boot_crawled_md"
-    # os.makedirs(output_dir, exist_ok=True)
+    output_dir = "spring_crawled_md"
+    os.makedirs(output_dir, exist_ok=True)
     
     for i, url in enumerate(links_list, 1):
         # 경로 기반 파일명 생성
@@ -174,10 +174,10 @@ def fetch_docs(start_url="https://docs.spring.io/spring-boot/reference/", max_pa
             filename += ".md"
             
             # # Debug: 크롤링 결과 확인용
-            # filepath = os.path.join(output_dir, filename)
-            # with open(filepath, "w", encoding="utf-8") as f:
-            #     f.write(f"Source: {url}\n\n")
-            #     f.write(markdown_text)
+            filepath = os.path.join(output_dir, filename)
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(f"Source: {url}\n\n")
+                f.write(markdown_text)
             
             print(f"  ✓ Saved: {filename}")
             success_count += 1

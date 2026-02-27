@@ -6,7 +6,7 @@ from tqdm.asyncio import tqdm
 import hashlib
 
 from data_pipeline.crawler import fetch_docs
-from data_pipeline.processor.processor import chunk_markdown_content
+from data_pipeline.processor.processor import chunk_markdown_content, basic_split_text
 from data_pipeline.storage import add_documents
 
 
@@ -26,6 +26,7 @@ async def process_page(sem, page, log_dir, category):
         # 2. Process (Markdown Chunking)
         try:
             chunks = chunk_markdown_content(content)
+            # chunks = basic_split_text(content)
         except Exception as e:
             tqdm.write(f"  ! [Error] Failed to chunk {url_link}: {e}")
             return
@@ -93,6 +94,9 @@ async def run_pipeline_async(url="https://docs.spring.io/spring-boot/reference/"
     for i, page in enumerate(fetch_docs(url, max_pages=max_pages)):
         task = asyncio.create_task(process_page(sem, page, log_dir, category))
         tasks.append(task)
+        
+
+    exit(0)
     
     if tasks:
         print(f"\nScheduled {len(tasks)} tasks. Waiting for completion...")

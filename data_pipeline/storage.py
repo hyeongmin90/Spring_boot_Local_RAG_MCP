@@ -1,4 +1,4 @@
-import chromadb
+# import chromadb
 from chromadb.config import Settings
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
@@ -89,10 +89,10 @@ def query_documents(query, k=3, category=None):
     return results
 
 # Add support for Hybrid Search combining Chroma (Dense) and BM25 (Sparse)
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    from langchain_community.retrievers import BM25Retriever
+# import warnings
+# with warnings.catch_warnings():
+#     warnings.simplefilter("ignore")
+from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 
 

@@ -5,9 +5,9 @@ import concurrent.futures
 from tqdm import tqdm
 
 # 부모 디렉토리를 경로에 추가하여 모듈을 임포트할 수 있게 함
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from data_pipeline.evaluate_rag import get_random_chunks, generate_questions
+from data_pipeline.evaluation.evaluate_retriever import get_random_chunks, generate_questions
 
 def generate_and_save_dataset(num_samples=100, output_file="evaluation_dataset.json"):
     """
@@ -50,4 +50,4 @@ def generate_and_save_dataset(num_samples=100, output_file="evaluation_dataset.j
     print(f"\n데이터셋 생성이 완료되었습니다. '{output_file}'에 {len(dataset)}개의 항목이 저장되었습니다.")
 
 if __name__ == "__main__":
-    generate_and_save_dataset(num_samples=50)
+    generate_and_save_dataset(num_samples=10)
