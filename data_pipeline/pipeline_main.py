@@ -6,7 +6,7 @@ from tqdm.asyncio import tqdm
 import hashlib
 
 from data_pipeline.crawler import fetch_docs
-from data_pipeline.processor.processor import chunk_markdown_content
+from data_pipeline.processor.processor import chunk_markdown_content, basic_split_text
 from data_pipeline.storage import add_documents
 
 
@@ -26,6 +26,7 @@ async def process_page(sem, page, log_dir, category):
         # 2. Process (Markdown Chunking)
         try:
             chunks = chunk_markdown_content(content)
+            # chunks = basic_split_text(content)
         except Exception as e:
             tqdm.write(f"  ! [Error] Failed to chunk {url_link}: {e}")
             return
@@ -41,6 +42,12 @@ async def process_page(sem, page, log_dir, category):
              path_parts = url_link.rstrip('/').split('/')
              log_filename = path_parts[-1] if path_parts else "index"
         
+
+        for i, chunk in enumerate(chunks):
+            chunk.metadata["source"] = url_link
+            # Add docs_type to metadata
+            chunk.metadata["category"] = category
+            chunk.metadata["chunk_id"] = hashlib.md5(f"{url_link}#{i}".encode()).hexdigest()
         # # Debug: 청킹 결과 로그 저장
         # log_filename = "".join([c for c in log_filename if c.isalpha() or c.isdigit() or c in (' ', '.', '_', '-')]).rstrip()
         # log_path = os.path.join(log_dir, f"{log_filename}_chunks.txt")
@@ -49,14 +56,7 @@ async def process_page(sem, page, log_dir, category):
         #     f.write(f"Source: {url_link}\n")
         #     f.write(f"Total Chunks: {len(chunks)}\n")
         #     f.write("="*50 + "\n\n")
-            
         #     for i, chunk in enumerate(chunks):
-        #         chunk.metadata["source"] = url_link
-        #         # Add docs_type to metadata
-        #         chunk.metadata["category"] = category
-        #         chunk.metadata["chunk_id"] = hashlib.md5(f"{url_link}#{i}".encode()).hexdigest()
-                
-        #         # Write to log
         #         f.write(f"=== Chunk {i+1} ===\n")
         #         f.write(f"Header: {chunk.metadata.get('header', 'N/A')}\n")
         #         f.write(f"Category: {category}\n")
@@ -94,6 +94,9 @@ async def run_pipeline_async(url="https://docs.spring.io/spring-boot/reference/"
     for i, page in enumerate(fetch_docs(url, max_pages=max_pages)):
         task = asyncio.create_task(process_page(sem, page, log_dir, category))
         tasks.append(task)
+        
+
+    exit(0)
     
     if tasks:
         print(f"\nScheduled {len(tasks)} tasks. Waiting for completion...")
