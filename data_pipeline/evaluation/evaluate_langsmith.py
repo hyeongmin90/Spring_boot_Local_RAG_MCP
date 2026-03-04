@@ -52,6 +52,7 @@ def initialize_agent():
     )
     return agent
 
+
 # 글로벌로 한 번만 생성해 둡니다. (테스트마다 매번 생성하면 느려짐)
 eval_agent = initialize_agent()
 
@@ -88,7 +89,37 @@ def predict_rag(inputs: dict) -> dict:
         "context": accumulated_context.strip() # context_qa 평가 시 환각 여부를 판단하기 위해 넘김
     }
 
+def predict_rag_no_tool(inputs: dict) -> dict:
+    """
+    명시된 질문에 대해 실제 rag_agent 파이프라인(LangGraph)을 가동하여 답변과 검색된 컨텍스트를 반환합니다.
+    """
+    question = inputs["question"]
+    
+    llm = ChatOpenAI(model="gpt-5-mini", temperature=0)
 
+    context = query_documents(question, k=5)
+    
+    prompt = PromptTemplate.from_template(
+        """
+        You are a Spring Boot Expert RAG Agent.\n
+        Answer user questions accurately using the provided documentation.\n
+        If you cannot find the answer in the search results, admit it honestly.\n
+        Do not include any information not found in the search results.\n
+        Provide clear, code-centric answers where applicable.\n
+        Question: {question}\n
+        Context: {context}\n
+        """
+    )
+
+    chain = prompt | llm
+
+    result = chain.invoke({"question": question, "context": context})
+    final_answer = result.content
+            
+    return {
+        "prediction": final_answer,
+        "context": context
+    }
 
 qa_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,

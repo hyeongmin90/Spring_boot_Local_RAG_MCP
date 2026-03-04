@@ -35,12 +35,13 @@ def generate_and_save_dataset(num_samples=100, output_file="evaluation_dataset.j
             try:
                 item, questions = future.result()
 
-                dataset.append({
-                    "id": item['metadata'].get("chunk_id") or item.get("id"),
-                    "source": item['metadata'].get("source"),
-                    "content": item['content'],
-                    "questions": questions
-                })
+                if questions:
+                    dataset.append({
+                        "id": item['metadata'].get("chunk_id") or item.get("id"),
+                        "source": item['metadata'].get("source"),
+                        "content": item['content'],
+                        "questions": questions
+                    })
             except Exception as e:
                 print(f"질문 생성 중 오류 발생: {e}")
 
@@ -50,4 +51,4 @@ def generate_and_save_dataset(num_samples=100, output_file="evaluation_dataset.j
     print(f"\n데이터셋 생성이 완료되었습니다. '{output_file}'에 {len(dataset)}개의 항목이 저장되었습니다.")
 
 if __name__ == "__main__":
-    generate_and_save_dataset(num_samples=10)
+    generate_and_save_dataset(num_samples=200)
