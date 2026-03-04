@@ -160,8 +160,10 @@ def run_evaluation(num_samples=10, max_k=10):
                 print(f"\nChunk generation generated an exception: {exc}")
 
     print("\nEvaluating retrieval...")
-    
-    methods = ["dense", "hybrid", "hybrid_cohere"]
+    #======================================
+    # methods = ["dense", "hybrid", "hybrid_cohere"]
+    methods = ["dense", "mmr"]
+    #======================================
     all_metrics = {m: {
         "hits_1": 0,
         "hits_5": 0, "mrr_sum_5": 0.0, 
@@ -359,4 +361,4 @@ def run_evaluation(num_samples=10, max_k=10):
 
 if __name__ == "__main__":
     # You can adjust the number of samples and max_k value here
-    run_evaluation(num_samples=50, max_k=50)
+    run_evaluation(num_samples=50, max_k=20)

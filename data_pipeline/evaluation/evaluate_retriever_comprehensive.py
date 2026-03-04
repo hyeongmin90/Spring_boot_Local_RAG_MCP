@@ -18,12 +18,33 @@ def evaluate_retrieval(question, expected_id, method="dense", k=10):
     Queries the vector store with the generated question and checks if the expected chunk is retrieved.
     Calculates the rank of the expected chunk.
     """
-    if method == "mmr":
-        results = mmr_query_documents(question, k=k)
-    elif method == "hybrid":
-        results = query_hybrid(question, k=k, use_reranker=False)
-    elif method == "hybrid_cohere":
-        results = query_hybrid(question, k=k, use_reranker=True)
+    if method.startswith("mmr"):
+        # Format: "mmr" or "mmr_{lambda_mult}_{fetch_k}"
+        parts = method.split("_")
+        lm = 0.5
+        fk = max(20, k * 2)
+        if len(parts) == 3:
+            lm = float(parts[1])
+            fk = int(parts[2])
+        results = mmr_query_documents(question, k=k, lambda_mult=lm, fetch_k=fk)
+    elif method.startswith("hybrid_cohere"):
+        # Format: "hybrid_cohere" or "hybrid_cohere_{dense_weight}_{sparse_weight}"
+        parts = method.split("_")
+        dw = 0.7
+        sw = 0.3
+        if len(parts) == 4:
+            dw = float(parts[2])
+            sw = float(parts[3])
+        results = query_hybrid(question, k=k, dense_weight=dw, sparse_weight=sw, use_reranker=True)
+    elif method.startswith("hybrid"):
+        # Format: "hybrid" or "hybrid_{dense_weight}_{sparse_weight}"
+        parts = method.split("_")
+        dw = 0.7
+        sw = 0.3
+        if len(parts) == 3:
+            dw = float(parts[1])
+            sw = float(parts[2])
+        results = query_hybrid(question, k=k, dense_weight=dw, sparse_weight=sw, use_reranker=False)
     else:
         results = query_documents(question, k=k)
 
@@ -37,7 +58,7 @@ def evaluate_retrieval(question, expected_id, method="dense", k=10):
             
     return -1, [] # Not found within top k
 
-def run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=50):
+def run_comprehensive_evaluation(dataset_file="evaluation_dataset_split_7.json", max_k=50):
     print("=== RAG 종합 평가 시작 ===")
     
     if not os.path.exists(dataset_file):
@@ -50,8 +71,18 @@ def run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=5
     print(f"데이터셋 로드 완료: {len(dataset)}개의 청크 항목")
     embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small") 
     
-    methods = ["dense", "hybrid", "hybrid_cohere"]
-    
+    #============================
+    # Test different Hybrid ratios 
+    # Format: hybrid_{dense_weight}_{sparse_weight} 
+    methods = [
+        "dense",          # Baseline Cosine
+        "hybrid",         # Default (Dense 0.7, Sparse 0.3)
+        "hybrid_0.5_0.5", # Equal Weight
+        "hybrid_0.3_0.7", # Sparse Heavy
+        "hybrid_cohere",  # Cohere Reranker
+    ]
+    #============================
+
     all_metrics = {m: {
         "hits_1": 0,
         "hits_5": 0, "mrr_sum_5": 0.0, 
@@ -206,15 +237,21 @@ def run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=5
             mrr10_data.append(all_metrics[method]["mrr_sum_10"] / tq)
             
         x = np.arange(len(metrics_names))
-        width = 0.25
         
-        fig, ax = plt.subplots(figsize=(12, 7))
+        fig, ax = plt.subplots(figsize=(14, 7))
+        
+        # 동적으로 N개의 method를 위한 그래프 막대 폭과 오프셋 계산
+        num_methods = len(methods)
+        width = 0.8 / num_methods
+        offsets = np.linspace(-width*(num_methods-1)/2, width*(num_methods-1)/2, num_methods)
         
         # 각 method별로 막대 그리기
-        ax.bar(x - width, [hit1_data[0], hit5_data[0], hit10_data[0], mrr5_data[0], mrr10_data[0]], width, label=method_labels[0], color='#1f77b4')
-        ax.bar(x,        [hit1_data[1], hit5_data[1], hit10_data[1], mrr5_data[1], mrr10_data[1]], width, label=method_labels[1], color='#ff7f0e')
-        if len(methods) > 2:
-            ax.bar(x + width, [hit1_data[2], hit5_data[2], hit10_data[2], mrr5_data[2], mrr10_data[2]], width, label=method_labels[2], color='#2ca02c')
+        import matplotlib.cm as cm
+        colors = cm.get_cmap('tab10').colors
+        
+        for i, method in enumerate(methods):
+            data = [hit1_data[i], hit5_data[i], hit10_data[i], mrr5_data[i], mrr10_data[i]]
+            ax.bar(x + offsets[i], data, width, label=method_labels[i], color=colors[i % len(colors)])
             
         ax.set_ylabel('Scores')
         ax.set_title('RAG 종합 평가 지표 비교')
@@ -240,4 +277,4 @@ def run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=5
         print(f"\n[오류] 차트 생성 중 오류 발생: {e}")
 
 if __name__ == "__main__":
-    run_comprehensive_evaluation(dataset_file="evaluation_dataset.json", max_k=20)
+    run_comprehensive_evaluation(dataset_file="evaluation_dataset_split_3.json", max_k=20)

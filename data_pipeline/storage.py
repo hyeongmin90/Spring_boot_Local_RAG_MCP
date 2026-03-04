@@ -57,7 +57,7 @@ def add_documents(documents, collection_name="spring_docs"):
     vectorstore.add_documents(documents=documents, ids=ids)
     tqdm.write("Documents added successfully.")
 
-def mmr_query_documents(query, k=3, category=None, collection_name="spring_docs"):
+def mmr_query_documents(query, k=3, category=None, collection_name="spring_docs", lambda_mult=0.5, fetch_k=20):
     """
     Searches for documents similar to the query. with mmr
     """
@@ -70,8 +70,8 @@ def mmr_query_documents(query, k=3, category=None, collection_name="spring_docs"
         query=query, 
         k=k, 
         filter=search_filter,
-        lambda_mult=0.5,
-        fetch_k=20
+        lambda_mult=lambda_mult,
+        fetch_k=fetch_k
     )
     
     return results

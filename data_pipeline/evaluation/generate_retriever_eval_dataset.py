@@ -51,4 +51,4 @@ def generate_and_save_dataset(num_samples=100, output_file="evaluation_dataset.j
     print(f"\n데이터셋 생성이 완료되었습니다. '{output_file}'에 {len(dataset)}개의 항목이 저장되었습니다.")
 
 if __name__ == "__main__":
-    generate_and_save_dataset(num_samples=200)
+    generate_and_save_dataset(num_samples=100)
