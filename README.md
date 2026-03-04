@@ -22,6 +22,7 @@
 
 ### 1. RAG 파이프라인
 Spring boot docs를 RAG로 구축한 후 Langchain을 이용하여 챗봇을 구축
+Spring boot, Spring data redis의 docs를 대상으로 진행
 
 *   **하이브리드 검색 (Hybrid Search)**: ChromaDB를 이용한 Dense(의미 기반) 검색과 BM25를 이용한 Sparse(키워드 기반) 검색을 결합하여 검색 정확도 극대화.
 *   **Cohere Reranker 통합**: 1차로 검색된 수십 개의 후보군 문서를 딥러닝 문장 비교 모델(Cohere API)을 통해 2차 정밀 재배열(Reranking)하여 최상위 정답(Top-1, Top-5) 적중률을 비약적으로 상승.
@@ -108,7 +109,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📂 주요 디렉토리 구조 (Architecture)
+## 디렉토리 구조 (Architecture)
 
 ```text
 langchainDev/
@@ -146,6 +147,6 @@ langchainDev/
 └── README.md                        # 프로젝트 가이드
 ```
 
-## 📝 참고 사항
+## 참고 사항
 *   본 프로젝트는 로컬 Windows 환경 및 Python 3.12+ 버전 위에서 테스트되었습니다.
 *   **저장소 트래픽 초과 주의**: Cohere Reranker 사용 시 짧은 시간에 대량의 평가(`evaluate_retriever_comprehensive.py` 등)를 진행할 경우 Trial API Key의 Rate Limit(분당 요청 횟수)에 주의하세요. (Production Key 권장)
