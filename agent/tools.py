@@ -13,6 +13,8 @@ from .context import approval_lock, BASE_DIR, CODE_DIR
 from .utils import is_safe_path, check_esc_pressed, UserInterruptedException, clear_key_buffer
 from .ui import get_separator_line, wrap_text_wide, TerminalOutputViewer
 
+from final_pipeline.agent import ask_query
+
 # ==========================================
 # 도구(Tools) 정의 및 관련 헬퍼
 # ==========================================
@@ -511,4 +513,23 @@ def stand_by() -> str:
     time.sleep(seconds)
     return f"{seconds}초 대기완료"
 
-AGENT_TOOLS = [list_files, read_file, write_file, edit_file, run_terminal_command, list_background_processes, view_terminal_log, kill_background_process, stand_by]
+@tool
+def search_docs(query: str, category: str = None) -> str:
+    """
+    RAG 파이프라인(공식 문서 데이터베이스)에 질문을 검색하고 답변을 반환합니다.
+    최신 프레임워크나 라이브러리 사용법, 예제 코드 등에 대한 정보가 필요할 때 이 도구를 사용하세요.
+    
+    Args:
+        query: 검색할 질문 내용 
+        category: (선택) 검색할 카테고리 (예: spring-boot)
+    """
+    print(f"\n{get_separator_line(char='─', color=Fore.WHITE)}")
+    print(f"\n{Style.BRIGHT}SearchDocs (RAG){Style.RESET_ALL} query: {query}")
+    print(f"\n{get_separator_line(char='─', color=Fore.WHITE)}")
+    
+    try:
+        return ask_query(query, category)
+    except Exception as e:
+        return f"문서 검색 실패: {e}"
+
+AGENT_TOOLS = [list_files, read_file, write_file, edit_file, run_terminal_command, list_background_processes, view_terminal_log, kill_background_process, stand_by, search_docs]
