@@ -110,7 +110,7 @@ pip install -r requirements.txt
     ```bash
     python data_pipeline/evaluation/evaluate_retriever_comprehensive.py
     ```
-    > **평가 결과 예시 (Unseen Test Data 기준)**  
+    > **평가 결과 예시**  
     > ![RAG 검색 성능 평가 차트](results/hybrid_eval/5_docs/test_result/comprehensive_eval_chart_20260311_191037.png)
 
     - hybrid retriever 평가 결과
