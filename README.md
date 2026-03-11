@@ -17,6 +17,7 @@
 - Cohere Reranker
 - LangSmith
 - OpenAI GPT-5-mini
+- MCP (Model Context Protocol) / FastMCP
 
 ## 핵심 기능 (Core Features)
 
@@ -33,7 +34,11 @@
 *   **Retriever 자체 정량 평가**: Top-1/Top-5/Top-10 Hit Rate(적중률), MRR(Mean Reciprocal Rank), 어휘적/의미적 중복도(Redundancy) 등 필수 검색 성능 지표들을 벤치마킹.
 *   **차트 시각화**: `matplotlib`을 이용해 여러 검색 기법(Dense 단독 vs Hybrid vs Hybrid+Reranker) 간의 성능 지표 차이를 막대그래프 이미지로 자동 출력 및 저장 (`results/` 폴더).
 
-### 3. 코드 에이전트 (DevAgent) - 보조 기능
+### 3. MCP 서버 (RAG as a Tool)
+*   **FastMCP** 기반의 MCP(Model Context Protocol) 서버로 RAG 검색 기능을 외부 AI 도구에서 직접 호출할 수 있도록 노출.
+*   `get_docs(query)` 툴 하나로 Hybrid Search(Dense + BM25) 결과를 JSON 형태로 반환. (reranker 제외)
+
+### 4. 코드 에이전트 (DevAgent) - 보조 기능
 *   RAG 파이프라인 테스트 및 파일 수정, 환경 설정 등의 로컬 반복 작업을 돕기 위해 설계된 메인-서브 계층형 에이전트.
 *   터미널 명령어 실행, 파일 코드 리뷰 및 수정 기능 수행.
 
@@ -101,6 +106,21 @@ pip install -r requirements.txt
     ```bash
     python data_pipeline/evaluation/run_langsmith_eval.py
     ```
+*   **MCP 서버 직접 실행** (디버그/독립 실행용)
+    ```bash
+    python mcp/server.py
+    ```
+    MCP 클라이언트(Antigravity 등)에서 자동 기동하려면 `mcp_config.json`에 등록합니다:
+    ```json
+    {
+      "mcpServers": {
+        "rag-server": {
+          "command": "<venv경로>/python.exe",
+          "args": ["<프로젝트루트>/mcp/server.py"]
+        }
+      }
+    }
+    ```
 *   **보조 코드 에이전트 실행**
     ```bash
     python main.py
@@ -137,6 +157,9 @@ langchainDev/
 │   └── test.json                    # RAG 데이터셋
 │
 ├── chroma_db/                       # 로컬 벡터 데이터베이스(Chroma)
+│
+├── mcp/                             # MCP 서버 (RAG as a Tool)
+│   └── server.py                    # FastMCP 기반 get_docs 툴 노출
 │
 ├── agent/                           # 보조 코드 에이전트 패키지 (터미널, 파일 제어 로직)
 │   ├── sub_agent.py / tools.py      # 내부 도구 및 서브 에이전트 구현
