@@ -1,4 +1,4 @@
-# LangChain RAG & Code Helper Agent
+# LangChain RAG & MCP
 
 > **Note**: 이 프로젝트는 **LangChain 프레임워크 기반의 고급 RAG (Retrieval-Augmented Generation) 파이프라인 구축 및 평가**를 핵심 목표로 하는 학습 및 실험용 프로젝트입니다. 
 > 부가적으로 로컬 파일 시스템 제어 및 자동화를 돕는 **코드 에이전트(DevAgent)** 기능이 보조 도구로 포함되어 있습니다.
@@ -9,7 +9,7 @@
 보조 기능인 `DevAgent`는 사용자의 자연어 요청을 해석하여 파일 읽기/쓰기, 터미널 명령어 실행 등 로컬 개발 보조와 RAG 테스트 자동화를 돕는 서브 어시스턴트 역할을 수행합니다.
 
 ## 프로젝트 목표
-코드 에이전트를 사용한 개발자동화 도구 구축 및 RAG를 이용한 최신 프레임워크 대응
+RAG를 이용한 최신 프레임워크 문서 검색 시스템 구축 및 성능 평가
 
 ## 사용 기술
 - Langchain
@@ -17,13 +17,17 @@
 - Cohere Reranker
 - LangSmith
 - OpenAI GPT-5-mini
-- MCP (Model Context Protocol) / FastMCP
+- MCP / FastMCP
 
 ## 핵심 기능 (Core Features)
 
 ### 1. RAG 파이프라인
 - Spring boot docs를 RAG로 구축한 후 Langchain을 이용하여 챗봇을 구축
-- Spring boot, Spring data redis의 docs를 대상으로 진행
+  - Spring boot
+  - Spring data jpa
+  - Spring data redis
+  - Spring security
+  - Spring cloud gateway
 
 *   **하이브리드 검색 (Hybrid Search)**: ChromaDB를 이용한 Dense(의미 기반) 검색과 BM25를 이용한 Sparse(키워드 기반) 검색을 결합하여 검색 정확도 극대화.
 *   **Cohere Reranker 통합**: 1차로 검색된 수십 개의 후보군 문서를 딥러닝 문장 비교 모델(Cohere API)을 통해 2차 정밀 재배열(Reranking)하여 최상위 정답(Top-1, Top-5) 적중률을 비약적으로 상승.
@@ -40,7 +44,7 @@
 
 ### 4. 코드 에이전트 (DevAgent) - 보조 기능
 *   RAG 파이프라인 테스트 및 파일 수정, 환경 설정 등의 로컬 반복 작업을 돕기 위해 설계된 메인-서브 계층형 에이전트.
-*   터미널 명령어 실행, 파일 코드 리뷰 및 수정 기능 수행.
+*   터미널 명령어 실행, RAG, 파일 코드 리뷰 및 수정 기능 수행.
 
 ---
 
@@ -60,7 +64,10 @@
    * **구조**: `Simple RAG Chain`
    * **전략**: 복잡한 LangGraph 기반 Tool 호출 구조 대신, 검색 결과를 프롬프트에 직접 컨텍스트(Context)로 주입하는 표준 RAG 방식을 채택했습니다. 
    * **결과**: LLM의 도구 판단 여부를 거치지 않아 지연 시간(Latency) 최소화에 기여하며, `ask_query` 함수 등의 모듈화를 통해 외부(코드 보조 에이전트 등)에서 직접 문자열 답변만 받아볼 수 있게 단순화했습니다.
-
+5. **MCP 서버 (RAG as a Tool)**
+   * **구조**: `FastMCP`
+   * **전략**: MCP(Model Context Protocol)를 이용하여 RAG 검색 기능을 외부 AI 도구에서 직접 호출할 수 있도록 노출합니다.
+   * **결과**: MCP 서버를 통해 RAG 검색 기능을 외부 AI 도구에서 직접 호출할 수 있도록 노출합니다.
 ---
 
 ## 🛠 설치 및 실행 (Installation & Setup)
@@ -96,7 +103,7 @@ pip install -r requirements.txt
     ```bash
     python final_pipeline/agent.py
     ```
-*   **RAG 종합 성능 평가 (Hit Rate, MRR 계산 및 시각화 차트 생성)**
+*   **Retriever 종합 성능 평가 (Hit Rate, MRR 계산 및 시각화 차트 생성)**
     ```bash
     python data_pipeline/evaluation/evaluate_retriever_comprehensive.py
     ```
@@ -110,7 +117,7 @@ pip install -r requirements.txt
     ```bash
     python mcp/server.py
     ```
-    MCP 클라이언트(Antigravity 등)에서 자동 기동하려면 `mcp_config.json`에 등록합니다:
+    MCP 클라이언트(Antigravity, Cursor 등)에서 자동 기동하려면 `mcp_config.json`에 등록합니다:
     ```json
     {
       "mcpServers": {
