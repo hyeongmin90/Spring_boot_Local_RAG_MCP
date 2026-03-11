@@ -3,13 +3,14 @@ import os
 import asyncio
 import hashlib
 from dotenv import load_dotenv
+from tqdm.asyncio import tqdm
 
 # Ensure the root project directory is in the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from final_pipeline.crawler import fetch_docs
-from final_pipeline.processor import chunk_markdown_content
-from final_pipeline.storage import add_documents
+from data_pipeline.crawler import fetch_docs
+from data_pipeline.processor.processor import chunk_markdown_content
+from data_pipeline.storage import add_documents
 
 async def process_page(sem, page, category):
     """
@@ -19,12 +20,12 @@ async def process_page(sem, page, category):
     content = page['content'] # Markdown format
     
     async with sem:
-        print(f"[Process] Started chunking for: {url_link}")
+        tqdm.write(f"  > [Start] Processing: {url_link}")
         try:
             # Semantic Markdown Chunking
             chunks = chunk_markdown_content(content)
         except Exception as e:
-            print(f"[Error] Failed to chunk {url_link}: {e}")
+            tqdm.write(f"  ! [Error] Failed to chunk {url_link}: {e}")
             return
 
         # Add global metadata & ID
@@ -33,7 +34,7 @@ async def process_page(sem, page, category):
             chunk.metadata["category"] = category
             chunk.metadata["chunk_id"] = hashlib.md5(f"{url_link}#{i}".encode()).hexdigest()
             
-        print(f"[Process] Created {len(chunks)} chunks from {url_link}")
+        tqdm.write(f"  - [Done] Created {len(chunks)} chunks from {url_link}")
 
         # Ingest to ChromaDB
         if chunks:
@@ -53,15 +54,39 @@ async def run_ingestion_pipeline(url: str, category: str, max_pages: int = None)
         
     if tasks:
         print(f"\nScheduled {len(tasks)} tasks. Awaiting completion...")
-        await asyncio.gather(*tasks)
+        for f in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="Processing Pages"):
+            await f
     else:
         print("No pages found or crawled.")
 
     print("\n=== Ingestion Pipeline Completed ===")
 
 if __name__ == "__main__":
-    url = "https://docs.spring.io/spring-data/redis/reference/"
-    #url = "https://docs.spring.io/spring-boot/reference/"
-    category = "spring-data-redis"
-    #category = "spring-boot"
+    print("select category")
+    print("1. spring-boot")
+    print("2. spring-data-jpa")
+    print("3. spring-data-redis")
+    print("4. spring-security")
+    print("5. spring-cloud-gateway")
+    input_category = input("Enter category: ")
+    if input_category == "1":
+        url = "https://docs.spring.io/spring-boot/reference/"
+        category = "spring-boot"
+    elif input_category == "2":
+        url = "https://docs.spring.io/spring-data/jpa/reference/"
+        category = "spring-data-jpa"
+    elif input_category == "3":
+        url = "https://docs.spring.io/spring-data/redis/reference/"
+        category = "spring-data-redis"
+    elif input_category == "4":
+        url = "https://docs.spring.io/spring-security/reference/"
+        category = "spring-security"
+    elif input_category == "5":
+        url = "https://docs.spring.io/spring-cloud-gateway/reference/"
+        category = "spring-cloud-gateway"
+    else:
+        print("Invalid category")
+        sys.exit(1)
+    
+    print(f"Ingesting {category} docs from {url}")
     asyncio.run(run_ingestion_pipeline(url, category)) 

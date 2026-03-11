@@ -7,8 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from colorama import init, Fore, Style
 
-# Assuming final_pipeline is in the PYTHONPATH or run from project root
-from final_pipeline.retriever import query as retriever_query
+from data_pipeline.storage import query_hybrid
 
 init(autoreset=True)
 
@@ -27,7 +26,7 @@ def get_rag_chain():
     load_dotenv()
     
     # Initialize Model
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatOpenAI(model="gpt-5-mini", temperature=0)
     
     # Define RAG Prompt
     prompt = ChatPromptTemplate.from_messages([
@@ -51,8 +50,8 @@ def ask_query(question: str, category: str = None) -> str:
     """
     rag_chain = get_rag_chain()
     
-    # 1. 문서 검색 (Retrieve Documents)
-    retrieved_docs = retriever_query(question, k=5, category=category)
+    # 1. 문서 검색 (Retrieve Documents) - Reranker 활성화 (최종 파이프라인과 동일한 스펙)
+    retrieved_docs = query_hybrid(question, k=5, category=category, use_reranker=True)
     context_str = format_docs(retrieved_docs)
     
     # 2. 결과 생성 및 텍스트 반환
