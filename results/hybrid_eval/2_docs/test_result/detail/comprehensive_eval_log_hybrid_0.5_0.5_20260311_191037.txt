@@ -1,0 +1,213 @@
+Retrieval Method: HYBRID_0.5_0.5
+
+=== Evaluation Results ===
+Total Questions Evaluated: 49
+-------------------------
+--- Retrieval Metrics ---
+Top-1 Hit Rate: 16.33% (8/49)
+Top-5 Hit Rate: 42.86% (21/49) | MRR: 0.2684
+Top-10 Hit Rate: 48.98% (24/49) | MRR: 0.2770
+Top-20 Hit Rate: 55.10% (27/49) | MRR: 0.2808
+-------------------------
+--- Redundancy Metrics ---
+Semantic Redundancy: 0.3942
+Lexical Redundancy: 0.1007
+==================================================
+
+--- Detailed Log ---
+Q1: Given a setup that prohibits any embedded object-type content and forces all requests onto an encrypted channel, why would a separately authored modular security configuration be ignored by the framework’s automatic applicator unless it is published as a standalone, single-parameter public configurator on the primary security builder, and how do those two enforcement choices together motivate placing such a module at the outermost builder level instead of nesting it inside a subordinate configurator?
+   Source: https://docs.spring.io/spring-security/reference/servlet/configuration/kotlin.html
+   Result: ✅ HIT (Rank: 3)
+
+Q2: Given that an application’s composition container must rely on a language-specific bridge to reach an external key-value datastore, and the platform enforces a single, uniform interface that provides abstractions for obtaining live communication channels to that datastore regardless of which bridge is chosen, which architectural constraints and runtime concerns—especially relating to resource lifecycle management, portability across different bridges, and reliable retrieval of active channels—compel adopting that single standardized abstraction instead of permitting bridge-specific, disparate interfaces?
+   Source: https://docs.spring.io/spring-data/redis/reference/redis/drivers.html
+   Result: ❌ MISS (Not in top-20)
+
+Q3: Given a declarative facility that can be declared either at the top-level security configuration or inside a module-level security block, and that binds a comma-separated list of authorization identifiers to every service-layer routine matched by a signature-style selector (which specifies return type, fully-qualified target type and parameter types), what specific scalability, maintainability or consistency problems are being addressed by choosing this centralized selector-driven enforcement instead of applying per-member inline annotations on each method or type?
+   Source: https://docs.spring.io/spring-security/reference/servlet/appendix/namespace/method-security.html
+   Result: ❌ MISS (Not in top-20)
+
+Q4: When a team elects to wire the request-filter chain manually instead of using the higher-level XML shortcut, what practical constraint or potential misconfiguration in the mapping between endpoints and their protection rules—given that each mapping entry is limited to a path template, a single HTTP verb and a guard clause, that path matching may be one of wildcard-style, full-regular-expression or case-insensitive pattern strategies, and that expression-style guard syntax is enabled by default—would motivate requiring an explicit supplier component to be provided for assigning protections to incoming requests?
+   Source: https://docs.spring.io/spring-security/reference/servlet/appendix/namespace/http.html
+   Result: ✅ HIT (Rank: 13)
+
+Q5: Given a cluster-level agent that regularly performs HTTP checks with configurable intervals and failure thresholds, and an application that exposes two separate internal indicators—one reflecting whether the process should be restarted and another reflecting whether it can accept incoming requests—both in addition to a single consolidated status route, what operational constraint or failure mode compels operators to wire the agent’s checks to those two distinct routes instead of relying only on the consolidated route?
+   Source: https://docs.spring.io/spring-boot/reference/actuator/endpoints.html
+   Result: ❌ MISS (Not in top-20)
+
+Q6: Given that a web framework stopped treating requests marked by the usual AJAX-identifying header as automatically trustworthy, and that removing server-held expiration eliminates any capability to forcibly revoke a client-side secret, explain why accepting submissions that stream large binary/form parts forces a paradox where the payload must be consumed before the secret can be checked, and analyze how placing the client-provided secret inside the streamed payload versus appending it to the submission URL each creates distinct operational and security trade-offs that are amplified by the absence of server-side expiry.
+   Source: https://docs.spring.io/spring-security/reference/features/exploits/csrf.html
+   Result: ✅ HIT (Rank: 1)
+
+Q7: Given that the instrumentation emits per-command metric instruments and distributed-trace segments for interactions with the external key–value cache, and that the client runtime is explicitly constructed and then injected into the component that creates connections, what concrete operational or correlation problem would compel engineers to pre-instantiate and share a single observation-aware client runtime instead of allowing each connection-creator to build its own?
+   Source: https://docs.spring.io/spring-data/redis/reference/observability.html
+   Result: ✅ HIT (Rank: 1)
+
+Q8: Given an authentication component that replaces the client’s server-bound state token upon successful sign-in and marks that token to be transmitted only over encrypted channels, why does immediately returning the user to an unencrypted connection — combined with enforcement of limits on simultaneous active user contexts and a configuration that forbids creating server-side state — cause a repeated prompt or a denied state-changing request, and what unavoidable architectural trade-offs compel the security layer to nonetheless create or rotate such server-side state (for example to preserve pre-login navigation intent and to defend against forged requests)?
+   Source: https://docs.spring.io/spring-security/reference/servlet/appendix/faq.html
+   Result: ❌ MISS (Not in top-20)
+
+Q9: Given a facility that applies a leading namespace to operating-system-level configuration keys—which must be assigned on the application bootstrap component before startup—and that maps dot-separated property names into uppercase, underscore-separated OS variable names while leaving other configuration sources unchanged, what architectural constraints and interoperability risks would justify restricting that transformation to only the OS-level source, and how does the requirement to set the namespace prior to launch influence behavior for multiple applications or mixed-source configuration setups?
+   Source: https://docs.spring.io/spring-boot/reference/features/external-config.html
+   Result: ✅ HIT (Rank: 2)
+
+Q10: When an automated result-to-object mapping component can only deduce which inputs to populate if a type exposes a single creation signature, what explicit developer-attached marker should be applied to a chosen creation signature when the type offers multiple such signatures, and why is this marker required given the mapper’s dependence on a lone, unambiguous instantiation point?
+   Source: https://docs.spring.io/spring-data/jpa/reference/repositories/projections.html
+   Result: ✅ HIT (Rank: 1)
+
+Q11: Given a program where a registered shutdown-value supplier can provide a nonzero process termination status and the same contract may also be fulfilled by thrown control objects, what aspect of the resolution strategy causes the runtime to accept the first nonzero result when multiple suppliers are present, and which explicit precedence mechanism must be applied to deterministically choose which supplier’s nonzero value wins?
+   Source: https://docs.spring.io/spring-boot/reference/features/spring-application.html
+   Result: ❌ MISS (Not in top-20)
+
+Q12: Given an API that exposes both a method to add a single upstream extractor that turns an incoming web request into an internal registration-auth representation and a separate setter that accepts a callback to modify the ordered collection of such extractors — and that repeats this add-vs-collection-mutator pattern for the downstream verifier components that authenticate that internal representation — what practical constraints or integration problems would drive designers to provide both single-item insertion and whole-collection mutation for each processing stage?
+   Source: https://docs.spring.io/spring-security/reference/servlet/oauth2/authorization-server/protocol-endpoints.html
+   Result: ❌ MISS (Not in top-20)
+
+Q13: What lifecycle or compatibility limitation of using only a single, session-backed authentication-state store would force architects to adopt a composite repository that persists the authentication information to both a short-lived per-request attribute store and a longer-lived session store and that reads by probing those stores in a defined order?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/persistence.html
+   Result: ❌ MISS (Not in top-20)
+
+Q14: Given that an access credential cannot be validated purely by inspecting its contents, what fundamental limitation of that format explains why operators must both supply a networked validation endpoint with attendant client credentials and choose to install either a blocking verifier for traditional web runtimes or a non‑blocking verifier for asynchronous runtimes, and why a single set of configuration keys can be used for both kinds of deployments?
+   Source: https://docs.spring.io/spring-boot/reference/web/spring-security.html
+   Result: ❌ MISS (Not in top-20)
+
+Q15: Given a verifier that retrieves a client's public-key entries from a configured remote key-set location and matches an individual entry's embedded key material against the credential the client presented during the secure-transport handshake, what operational vulnerability or verification gap necessitates that the issuer cryptographically bind the issued access credential to that presented transport credential, and how does such binding mitigate the identified risk?
+   Source: https://docs.spring.io/spring-security/reference/servlet/oauth2/authorization-server/configuration-model.html
+   Result: ✅ HIT (Rank: 3)
+
+Q16: Given an application that entirely relies on an upstream access proxy to assert client identities — consuming those early-arriving assertions and mapping them to local accounts via a lookup adapter — which specific misconfigurations or operational weaknesses would enable an attacker to submit an arbitrary asserted identity, and what concrete guarantees must the proxy and deployment enforce to eliminate this spoofing risk?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/preauth.html
+   Result: ✅ HIT (Rank: 5)
+
+Q17: Given a reverse proxy that can be told for individual upstream mappings to strip specified response metadata entries by identifier, or alternatively configured once to apply such stripping across all mappings, what operational or compatibility concern—considering the removal occurs before responses are delivered to clients—would drive operators to prefer selective per-mapping declarations rather than a blanket global rule?
+   Source: https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webflux/gatewayfilter-factories/removeresponseheader-factory.html
+   Result: ❌ MISS (Not in top-20)
+
+Q18: Given that runtime diagnostic checks must respond before connection timeouts and that you might introduce a novel system state code, what fundamental limitation necessitates either providing a custom component to reconcile multiple probe results into a single overall state or declaring an explicit severity ranking in configuration, and how does the configurable threshold for slow probe responses affect the ability to consistently surface that new state?
+   Source: https://docs.spring.io/spring-boot/reference/actuator/endpoints.html
+   Result: ✅ HIT (Rank: 2)
+
+Q19: Given that registering a custom token-validation implementation completely supplants the framework’s automatic wiring, while pointing to an external verification endpoint is honored before other configuration settings, what practical constraints or architectural concerns would motivate a team to implement the custom validator rather than rely on the endpoint reference?
+   Source: https://docs.spring.io/spring-security/reference/reactive/oauth2/resource-server/opaque-token.html
+   Result: ❌ MISS (Not in top-20)
+
+Q20: Given that certain URL patterns can be explicitly bypassed by the HTTP security processing pipeline and that the switch which enables procedure-level access checks has been declared in a different application context than the components it should protect, explain why the caller identity may be missing during those requests and why a view-layer authorization helper would therefore ignore the procedure-level access annotations — and why moving either the activation declaration into the web application context or the protected components into the root application context resolves both problems.
+   Source: https://docs.spring.io/spring-security/reference/servlet/appendix/faq.html
+   Result: ✅ HIT (Rank: 1)
+
+Q21: In a system where a single configuration toggle enables lightweight, user-level execution contexts across the application, what inherent scheduling behavior causes independent executor sizing and isolation to be ignored, why can that behavior sometimes lower overall throughput when some of those contexts become anchored to underlying native workers, and which runtime version considerations and diagnostic techniques should be checked before enabling this mode?
+   Source: https://docs.spring.io/spring-boot/reference/features/spring-application.html
+   Result: ❌ MISS (Not in top-20)
+
+Q22: Given that the security framework purposely does not enable browser-enforced resource-origin directives by default and instead expects the application to opt in by having the server inject a policy header (optionally with a reporting target), what security, compatibility, and operational constraints motivate requiring explicit developer activation, and how do those constraints determine the correct placement and composition of that header within the server-side request/response processing pipeline (for example with respect to intermediaries, per-route differences, header merging, and privacy of report delivery)?
+   Source: https://docs.spring.io/spring-security/reference/reactive/exploits/headers.html
+   Result: ✅ HIT (Rank: 9)
+
+Q23: Because the upgraded major-version data-binding implementation can reconstitute objects produced by the prior major release, and the authorization framework now selects the upgraded implementation by default, what practical concern or build-time constraint forces a project that must keep using the legacy implementation to explicitly exclude the indirectly included newer binding library and add a direct dependency on the older binding library?
+   Source: https://docs.spring.io/spring-security/reference/migration/index.html
+   Result: ❌ MISS (Not in top-20)
+
+Q24: Given a service that, upon receiving a termination request, first continues normal operation but then enters an orderly termination phase in which it stops taking new client interactions while still reporting its internal health as intact (so external health checks may no longer clearly reflect availability), what operational constraint or supervising-platform behavior most likely motivated implementing this withdraw-new-work-but-stay-healthy strategy instead of immediately marking the process as unhealthy and forcing an abrupt removal?
+   Source: https://docs.spring.io/spring-boot/reference/actuator/endpoints.html
+   Result: ✅ HIT (Rank: 7)
+
+Q25: What resource constraint motivates an automated request reattempt mechanism to buffer and attach an incoming message payload as an in-process byte buffer to the request—causing elevated memory pressure—and how does providing a concise configuration shorthand guarantee identical failure-retry behavior across two equivalent endpoint mappings?
+   Source: https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webmvc/filters/retry.html
+   Result: ✅ HIT (Rank: 2)
+
+Q26: In a message-driven framework where behavior can be tuned via application configuration keys, via globally-registered builder-tweaker components that influence every endpoint the factory produces, or via an annotation-level tweak that adjusts only a single endpoint, and where separate factory-level customizers can mutate the container orchestration, what architectural constraints or operational trade-offs would lead you to prefer introducing a global builder-tweaker component instead of relying solely on configuration keys or the per-endpoint annotation adjustment, and how would that choice affect your ability to subsequently apply container-level mutations through factory customizers?
+   Source: https://docs.spring.io/spring-boot/reference/messaging/pulsar.html
+   Result: ✅ HIT (Rank: 2)
+
+Q27: Given that the system auto-derives the service consumer’s canonical identifier from the deployed application’s root address combined with a per-registration token, and also exposes a predetermined callback path for incoming authentication assertions that is wired into the application’s single‑sign‑on request processing stage, what deployment constraints and interoperability concerns motivate choosing those specific defaults when registering the consumer with an external identity issuer?
+   Source: https://docs.spring.io/spring-security/reference/servlet/saml2/login/overview.html
+   Result: ✅ HIT (Rank: 3)
+
+Q28: Given that the library’s default assertion-based token-exchange handler uses a non-blocking HTTP adapter and will automatically adopt any supplied adapter bean into its authorized-client orchestrator, what kinds of server-side behaviors, network policies, or runtime constraints would compel a developer to replace that default adapter with a custom implementation?
+   Source: https://docs.spring.io/spring-security/reference/reactive/oauth2/client/authorization-grants.html
+   Result: ❌ MISS (Not in top-20)
+
+Q29: When a controller obtains a user’s identifier by reading it from the authenticated user’s identity assertion object, what limitation in that access path forces tests to inject the identifier into the identity-assertion portion of a mocked login exchange (instead of into other parts of the simulated credentials) in order for the controller to observe it?
+   Source: https://docs.spring.io/spring-security/reference/servlet/test/mockmvc/oauth2.html
+   Result: ❌ MISS (Not in top-20)
+
+Q30: Given that a recent release of the telemetry exporter started emitting metric descriptors by default (while offering a toggle to suppress that behavior) and that it can automatically use a locally deployed agent when explicit connection details are not provided, what operational limitation or user requirement most plausibly drove the decision to enable descriptor emission as the default?
+   Source: https://docs.spring.io/spring-boot/reference/actuator/metrics.html
+   Result: ✅ HIT (Rank: 1)
+
+Q31: Given a security framework whose configuration surface intentionally adopts the protocol's canonical labels for its HTTP surfaces, which deployment or threat-model constraints justify exposing distinct, named HTTP handlers—one that drives a browser-mediated permission handoff and another that performs the later server-to-server credential exchange—instead of collapsing them into a single route?
+   Source: https://docs.spring.io/spring-security/reference/servlet/oauth2/login/advanced.html
+   Result: ❌ MISS (Not in top-20)
+
+Q32: Considering a client component that fetches short-lived authorization credentials and offers both an append-only hook for adding request metadata and a full-replacement hook for overriding the metadata set, what operational constraints or failure modes in the credential issuance and error-interpretation paths would motivate choosing the append-only approach to inject a client-identifying metadata entry for a particular registered client instead of replacing the entire metadata payload?
+   Source: https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html
+   Result: ❌ MISS (Not in top-20)
+
+Q33: Given an arrangement where an application must first resolve a remote sign-out URL published by an external authentication service (by consulting that service's published metadata at its configured canonical address) and only then navigate the user's browser back to the application's base address, what architectural limitation or security concern necessitates this remote-then-local logout choreography, and how does that requirement change the responsibilities and configuration of the server-side logout handler?
+   Source: https://docs.spring.io/spring-security/reference/reactive/oauth2/login/logout.html
+   Result: ❌ MISS (Not in top-20)
+
+Q34: Given that direct assignment of request extraction and per-request metadata providers on the low-level request handler was removed in the latest security release and that the framework's higher-level resource-server configuration covers most scenarios, under what specific interoperability or deployment constraint would you still be compelled to supply a custom component that translates an incoming HTTP request into an authentication credential for that low-level handler?
+   Source: https://docs.spring.io/spring-security/reference/migration/servlet/oauth2.html
+   Result: ❌ MISS (Not in top-20)
+
+Q35: Given a security framework that only outlines, at a high level, how identity verification is positioned within the server-side request pipeline and delegates detailed sign-in flows to separate sections, which concrete shortcomings of that abstract depiction—for example missing sequence guarantees, unclear handler integration semantics, or undefined responsibility for credential exchange—force implementers to consult the flow-level guidance, and how do those shortcomings shape the architectural decisions when integrating the framework into an application's request handling stack?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/index.html
+   Result: ✅ HIT (Rank: 1)
+
+Q36: Given that one configuration instantiates a framework‑managed sequential container that is explicitly tied to a named external storage slot, while a separate example shows a consumer receiving a double‑ended container and inserting elements at the front, what operational constraints (for example, durability across restarts, multi‑process sharing, memory pressure, or specific concurrency semantics) would most plausibly have driven the choice to back that container with external storage rather than using an ephemeral in‑memory structure?
+   Source: https://docs.spring.io/spring-data/redis/reference/redis/support-classes.html
+   Result: ❌ MISS (Not in top-20)
+
+Q37: Given that, in a recent major release, the framework’s older authorization decision layer was extracted into a separate legacy package—making it unnecessary for newly created projects but still available to help existing projects migrate incrementally—what combination of backward‑compatibility obligations, simplification goals for fresh setups, and migration ergonomics most likely drove maintainers to isolate that layer instead of removing it outright?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authorization/index.html
+   Result: ✅ HIT (Rank: 2)
+
+Q38: Given a mechanism that, when it finds any policy entry beginning with a specific run-time prefix, builds a replacement security identity that preserves the original principal, credentials, and privileges while adding new privilege labels by prefixing each such policy entry, why must that constructed identity still be passed through the system’s authentication flow for approval, and what architectural security trade-offs arise from having the approving component accept these constructed identities without additional credential verification?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/runas.html
+   Result: ✅ HIT (Rank: 2)
+
+Q39: When is replacing only the function that converts HTTP error responses into structured error objects insufficient, such that you must instead provide and register a bespoke component that performs the credential-exchange via the available configuration mechanism rather than merely swapping the error-conversion function?
+   Source: https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html
+   Result: ✅ HIT (Rank: 6)
+
+Q40: Given that a component-producing factory's declared output type is the only type information available to the configuration-inclusion check, and that the property gate considers any existing value other than an explicit false as a match unless a specialized toggle-only gate is used, why does exposing the concrete implementer in the factory's declaration (instead of its abstract contract) become necessary for the configuration gate to be evaluated reliably, and how does relying on the toggle-only variant change that necessity?
+   Source: https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html
+   Result: ✅ HIT (Rank: 1)
+
+Q41: If a shared, parameterized contract is annotated to prevent automatic concrete creation because its type parameter remains unresolved, why does restricting that contract to only an identifier-based retrieval operation and a generic persist operation necessitate creating a specialized, type-bound contract to expose an extra lookup by a domain-specific key?
+   Source: https://docs.spring.io/spring-data/redis/reference/repositories/definition.html
+   Result: ❌ MISS (Not in top-20)
+
+Q42: Although the authenticated principal is both returned from the login operation and installed into the framework's thread-local security store, why must the persistence component still be explicitly invoked to have that security state automatically re-established on subsequent requests — and how is this requirement connected to the fact that the optional persistent-login routine, an application-level success event and the post-authentication handler are nonetheless executed during the success flow?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html
+   Result: ✅ HIT (Rank: 2)
+
+Q43: What environmental limitation or detection problem would prompt a tester to attach a moderate-diagnostic environment-reporting hook to a lightweight runtime scaffold—invoked with an empty assertion—and then also exercise a server-side runtime emulator as well as a simulated removal of certain libraries, in order to verify that specific modules activate only when the runtime exposes particular signals?
+   Source: https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html
+   Result: ✅ HIT (Rank: 4)
+
+Q44: Why would a project intentionally disable automatic live‑reload behavior at application startup, and how does relying on a modifiable marker file placed within the runtime's resource discovery locations enable controlled, developer‑initiated restart checks despite that global deactivation?
+   Source: https://docs.spring.io/spring-boot/reference/using/devtools.html
+   Result: ✅ HIT (Rank: 16)
+
+Q45: Given that a newer request-authorization module was introduced while the older interception component was deliberately kept as the default for backward compatibility, and that the new module is inserted into the request-filter pipeline, what compatibility trade-offs and pipeline-placement constraints drove that architectural choice, and what explicit configuration pattern must be declared by an application to opt into the new module’s behavior instead of continuing to use the legacy default?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
+   Result: ✅ HIT (Rank: 1)
+
+Q46: Considering that back-end pluggable authentication units typically expect interactive prompt handlers to obtain identity and secret data, while the upper-layer security orchestrator already collects credentials into a pre-filled carrier and various collaborators can be injected into the adapter, what interoperability or sequencing constraint forces the adapter base class to require implementers to construct the runtime authentication coordination object themselves rather than having the framework build it implicitly?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/jaas.html
+   Result: ✅ HIT (Rank: 5)
+
+Q47: Which inherent restriction of the declarative mapping layer makes it impossible to declare certain post‑creation property adjustments in its descriptor, thus forcing the use of an after‑creation modifier that mutates the produced managed objects, and why does that workaround require first identifying which managed objects are actually produced (so you must consult the official documentation and the article that explains how the mapping translates to managed instances)?
+   Source: https://docs.spring.io/spring-security/reference/servlet/appendix/faq.html
+   Result: ❌ MISS (Not in top-20)
+
+Q48: Considering a class-based startup task that runs code during application boot, why would the existence of multiple such managed components drive you to add either a programmatic sequencing contract or a declarative sequencing marker, and which lifecycle problem does that choice aim to prevent?
+   Source: https://docs.spring.io/spring-boot/reference/features/spring-application.html
+   Result: ✅ HIT (Rank: 20)
+
+Q49: What architectural limitation or failure mode would compel composing the component that produces access-decision services with an additional permission-enforcement module — where that module consults a small identity-to-required-verification data source which flags a privileged account for an extra step — instead of relying solely on the data entries to cause the extra verification?
+   Source: https://docs.spring.io/spring-security/reference/servlet/authentication/mfa.html
+   Result: ❌ MISS (Not in top-20)
+
