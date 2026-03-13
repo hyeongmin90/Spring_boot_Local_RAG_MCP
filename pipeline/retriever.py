@@ -5,6 +5,7 @@ from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_cohere import CohereRerank
+import re
 
 from pipeline.storage import get_vectorstore
 
