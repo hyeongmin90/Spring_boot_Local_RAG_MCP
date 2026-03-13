@@ -4,6 +4,7 @@ import platform
 import time
 import shutil
 import os
+import sys
 from pathlib import Path
 
 from langchain_core.tools import tool
@@ -12,6 +13,9 @@ from . import context
 from .context import approval_lock, BASE_DIR, CODE_DIR
 from .utils import is_safe_path, check_esc_pressed, UserInterruptedException, clear_key_buffer
 from .ui import get_separator_line, wrap_text_wide, TerminalOutputViewer
+
+project_root = str(Path(__file__).resolve().parent.parent.parent)
+sys.path.append(project_root)
 
 from final_pipeline.agent import ask_query
 
@@ -518,6 +522,8 @@ def search_docs(query: str, category: str = None) -> str:
     """
     RAG 파이프라인(공식 문서 데이터베이스)에 질문을 검색하고 답변을 반환합니다.
     최신 프레임워크나 라이브러리 사용법, 예제 코드 등에 대한 정보가 필요할 때 이 도구를 사용하세요.
+    
+    spring-boot, spring-data-jpa, spring-data-redis, spring-cloud-gateway, spring-security
     
     Args:
         query: 검색할 질문 내용 

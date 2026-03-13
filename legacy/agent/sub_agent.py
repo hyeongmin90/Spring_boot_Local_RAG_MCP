@@ -15,12 +15,10 @@ from agent.ui import (
 
 class SubAgent:
     def __init__(self):
-        
         self.session_counter = 1
         self.thread_id = f"sub_agent-{self.session_counter:03d}"
         self.agent = self._create_my_agent()
         self.user_interrupted = False
-        
 
     def _create_my_agent(self):
         """LangChain 에이전트를 생성하고 설정합니다."""
